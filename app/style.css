@@ -1,0 +1,209 @@
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&display=swap');
+
+:root {
+  --bg-1: #f8fafc;
+  --bg-2: #dbeafe;
+  --bg-3: #fde68a;
+  --ink: #0f172a;
+  --ink-soft: #334155;
+  --line: rgba(15, 23, 42, 0.12);
+  --card: rgba(255, 255, 255, 0.72);
+  --brand: #0284c7;
+  --brand-2: #0ea5e9;
+  --accent: #f97316;
+}
+
+html,
+body,
+[class*="css"] {
+  font-family: 'Manrope', sans-serif;
+  color: var(--ink);
+}
+
+.stApp {
+  position: relative;
+  background:
+    radial-gradient(circle at 10% 12%, rgba(14, 165, 233, 0.18) 0%, transparent 28%),
+    radial-gradient(circle at 88% 16%, rgba(249, 115, 22, 0.17) 0%, transparent 30%),
+    radial-gradient(circle at 82% 82%, rgba(59, 130, 246, 0.15) 0%, transparent 30%),
+    linear-gradient(128deg, var(--bg-1) 0%, var(--bg-2) 56%, var(--bg-3) 100%);
+}
+
+.stApp::before {
+  content: "";
+  position: fixed;
+  left: -140px;
+  top: 62vh;
+  width: 420px;
+  height: 420px;
+  border-radius: 999px;
+  background: radial-gradient(circle, rgba(14, 165, 233, 0.14), transparent 70%);
+  filter: blur(8px);
+  animation: floatBlob 10s ease-in-out infinite alternate;
+  pointer-events: none;
+}
+
+.block-container {
+  max-width: 1250px;
+  padding-top: 1rem;
+}
+
+.hero {
+  padding: 1.1rem 1.25rem;
+  border-radius: 22px;
+  border: 1px solid var(--line);
+  background: linear-gradient(124deg, rgba(255, 255, 255, 0.86), rgba(255, 255, 255, 0.58));
+  backdrop-filter: blur(10px);
+  box-shadow: 0 14px 34px rgba(15, 23, 42, 0.08);
+  animation: fadeUp 0.6s ease;
+}
+
+.hero h1 {
+  margin: 0;
+  font-size: 2rem;
+  letter-spacing: -0.03em;
+}
+
+.hero p {
+  margin: 0.28rem 0 0;
+  color: var(--ink-soft);
+}
+
+.badge-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+  margin-top: 0.6rem;
+}
+
+.badge-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.34rem 0.65rem;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  border: 1px solid rgba(2, 132, 199, 0.35);
+  color: #0c4a6e;
+  background: linear-gradient(120deg, rgba(191, 219, 254, 0.55), rgba(125, 211, 252, 0.4));
+}
+
+.card {
+  border-radius: 18px;
+  border: 1px solid var(--line);
+  background: var(--card);
+  padding: 1rem 1.05rem;
+  box-shadow: 0 10px 28px rgba(15, 23, 42, 0.07);
+  backdrop-filter: blur(8px);
+  animation: fadeUp 0.5s ease;
+}
+
+.compact-card {
+  padding: 0.72rem 0.9rem;
+  font-size: 0.93rem;
+  color: #1e293b;
+}
+
+.kpi-row {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 0.72rem;
+}
+
+.kpi {
+  border-radius: 16px;
+  padding: 0.82rem 0.86rem;
+  border: 1px solid rgba(15, 23, 42, 0.1);
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.56));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.65);
+}
+
+.kpi-label {
+  font-size: 0.77rem;
+  color: #475569;
+  margin-bottom: 0.12rem;
+}
+
+.kpi-value {
+  font-size: 1.1rem;
+  letter-spacing: -0.02em;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.stTabs [data-baseweb="tab-list"] {
+  gap: 0.5rem;
+}
+
+.stTabs [data-baseweb="tab"] {
+  height: 2.4rem;
+  border-radius: 12px;
+  padding: 0 0.9rem;
+  color: #334155;
+  font-weight: 700;
+  border: 1px solid rgba(15, 23, 42, 0.1);
+  background: rgba(255, 255, 255, 0.56);
+}
+
+.stTabs [aria-selected="true"] {
+  background: linear-gradient(130deg, rgba(14, 165, 233, 0.18), rgba(2, 132, 199, 0.23));
+  border-color: rgba(2, 132, 199, 0.32);
+  color: #0c4a6e;
+}
+
+.stButton button,
+.stDownloadButton button {
+  border-radius: 12px;
+  border: 1px solid rgba(15, 23, 42, 0.16);
+  background: linear-gradient(125deg, var(--brand-2), var(--brand));
+  color: #ffffff;
+  font-weight: 700;
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+
+.stButton button:hover,
+.stDownloadButton button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 20px rgba(2, 132, 199, 0.25);
+}
+
+[data-testid="stMetricValue"] {
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(9px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes floatBlob {
+  from {
+    transform: translateY(-10px);
+  }
+  to {
+    transform: translateY(18px);
+  }
+}
+
+@media (max-width: 1100px) {
+  .kpi-row {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 760px) {
+  .kpi-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .hero h1 {
+    font-size: 1.58rem;
+  }
+}
