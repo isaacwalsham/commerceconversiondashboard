@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from dataclasses import dataclass
 import json
 import sys
 from pathlib import Path
@@ -18,7 +19,6 @@ if str(SRC_DIR) not in sys.path:
     sys.path.insert(0, str(SRC_DIR))
 
 from commerceconversiondashboard.inference import load_metadata, load_model
-from commerceconversiondashboard.data import bundled_dataset_path, list_bundled_datasets
 from commerceconversiondashboard.paths import (
     CALIBRATION_FILE,
     EVAL_FILE,
@@ -63,6 +63,15 @@ SOURCE_OPTION_BUNDLED = "Built-in datasets"
 SOURCE_OPTION_UPLOAD = "Upload a CSV"
 SOURCE_OPTION_DOWNLOAD = "Auto-download from UCI"
 SOURCE_OPTIONS = [SOURCE_OPTION_BUNDLED, SOURCE_OPTION_UPLOAD, SOURCE_OPTION_DOWNLOAD]
+
+
+@dataclass(frozen=True)
+class BundledDatasetOption:
+    dataset_id: str
+    name: str
+    file: str
+    description: str
+    path: Path
 
 
 def _percent(value: float, digits: int = 2) -> str:
@@ -133,8 +142,45 @@ def _safe_rerun() -> None:
         st.experimental_rerun()
 
 
+def _list_bundled_dataset_options() -> list[BundledDatasetOption]:
+    bundled_dir = PROJECT_ROOT / "data" / "bundled"
+    manifest_path = bundled_dir / "datasets_manifest.json"
+
+    if manifest_path.exists():
+        payload = json.loads(manifest_path.read_text())
+        items = []
+        for entry in payload.get("datasets", []):
+            if not all(key in entry for key in ["id", "name", "file", "description"]):
+                continue
+            path = bundled_dir / str(entry["file"])
+            if not path.exists():
+                continue
+            items.append(
+                BundledDatasetOption(
+                    dataset_id=str(entry["id"]),
+                    name=str(entry["name"]),
+                    file=str(entry["file"]),
+                    description=str(entry["description"]),
+                    path=path,
+                )
+            )
+        if items:
+            return items
+
+    return [
+        BundledDatasetOption(
+            dataset_id=path.stem,
+            name=path.stem.replace("_", " ").title(),
+            file=path.name,
+            description="Bundled dataset file.",
+            path=path,
+        )
+        for path in sorted(bundled_dir.glob("*.csv"))
+    ]
+
+
 def _dataset_training_controls(key_prefix: str, button_label: str) -> None:
-    bundled = list_bundled_datasets()
+    bundled = _list_bundled_dataset_options()
 
     source_option = st.radio(
         "Dataset source",
@@ -159,7 +205,7 @@ def _dataset_training_controls(key_prefix: str, button_label: str) -> None:
                 key=f"{key_prefix}_bundled_choice",
             )
             selected_dataset = label_to_dataset[selected_label]
-            data_path = bundled_dataset_path(selected_dataset.dataset_id)
+            data_path = selected_dataset.path
             dataset_name = selected_dataset.name
             st.caption(selected_dataset.description)
 
