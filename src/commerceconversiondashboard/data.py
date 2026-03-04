@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+import json
 from pathlib import Path
 
 import pandas as pd
@@ -10,7 +11,15 @@ import requests
 from requests import RequestException
 from sklearn.model_selection import train_test_split
 
-from .paths import DATA_PROCESSED_DIR, DATA_RAW_DIR, RAW_DATA_FILE, TEST_DATA_FILE, TRAIN_DATA_FILE
+from .paths import (
+    DATA_BUNDLED_DIR,
+    DATA_PROCESSED_DIR,
+    DATA_RAW_DIR,
+    DATASET_MANIFEST_FILE,
+    RAW_DATA_FILE,
+    TEST_DATA_FILE,
+    TRAIN_DATA_FILE,
+)
 
 DATASET_URL = "https://archive.ics.uci.edu/ml/machine-learning-databases/00468/online_shoppers_intention.csv"
 MONTH_ORDER = ["Jan", "Feb", "Mar", "Apr", "May", "June", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
@@ -26,10 +35,65 @@ class SplitData:
     y_test: pd.Series
 
 
+@dataclass(frozen=True)
+class BundledDataset:
+    """Metadata for built-in project datasets."""
+
+    dataset_id: str
+    name: str
+    file: str
+    description: str
+
+    @property
+    def path(self) -> Path:
+        return DATA_BUNDLED_DIR / self.file
+
+
 def ensure_data_dirs() -> None:
     """Create required data folders if missing."""
     DATA_RAW_DIR.mkdir(parents=True, exist_ok=True)
     DATA_PROCESSED_DIR.mkdir(parents=True, exist_ok=True)
+    DATA_BUNDLED_DIR.mkdir(parents=True, exist_ok=True)
+
+
+def list_bundled_datasets() -> list[BundledDataset]:
+    """Return available built-in dataset options."""
+    ensure_data_dirs()
+
+    if DATASET_MANIFEST_FILE.exists():
+        payload = json.loads(DATASET_MANIFEST_FILE.read_text())
+        datasets = []
+        for entry in payload.get("datasets", []):
+            if not all(key in entry for key in ["id", "name", "file", "description"]):
+                continue
+            datasets.append(
+                BundledDataset(
+                    dataset_id=str(entry["id"]),
+                    name=str(entry["name"]),
+                    file=str(entry["file"]),
+                    description=str(entry["description"]),
+                )
+            )
+        return [d for d in datasets if d.path.exists()]
+
+    csv_files = sorted(DATA_BUNDLED_DIR.glob("*.csv"))
+    return [
+        BundledDataset(
+            dataset_id=path.stem,
+            name=path.stem.replace("_", " ").title(),
+            file=path.name,
+            description="Bundled dataset file.",
+        )
+        for path in csv_files
+    ]
+
+
+def bundled_dataset_path(dataset_id: str) -> Path:
+    """Resolve a bundled dataset id to an existing file path."""
+    for dataset in list_bundled_datasets():
+        if dataset.dataset_id == dataset_id:
+            return dataset.path
+    raise ValueError(f"Unknown bundled dataset id: {dataset_id}")
 
 
 def download_online_shoppers_dataset(force: bool = False, destination: Path = RAW_DATA_FILE) -> Path:

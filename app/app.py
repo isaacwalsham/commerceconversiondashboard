@@ -18,6 +18,7 @@ if str(SRC_DIR) not in sys.path:
     sys.path.insert(0, str(SRC_DIR))
 
 from commerceconversiondashboard.inference import load_metadata, load_model
+from commerceconversiondashboard.data import bundled_dataset_path, list_bundled_datasets
 from commerceconversiondashboard.paths import (
     CALIBRATION_FILE,
     EVAL_FILE,
@@ -57,6 +58,11 @@ PREFERRED_SCENARIO_FEATURES = [
     "SpecialDay",
     "Weekend",
 ]
+
+SOURCE_OPTION_BUNDLED = "Built-in datasets"
+SOURCE_OPTION_UPLOAD = "Upload a CSV"
+SOURCE_OPTION_DOWNLOAD = "Auto-download from UCI"
+SOURCE_OPTIONS = [SOURCE_OPTION_BUNDLED, SOURCE_OPTION_UPLOAD, SOURCE_OPTION_DOWNLOAD]
 
 
 def _percent(value: float, digits: int = 2) -> str:
@@ -113,6 +119,89 @@ def _artifacts_ready() -> bool:
         EXECUTIVE_SUMMARY_FILE,
     ]
     return all(p.exists() for p in required)
+
+
+def _clear_cached_artifacts() -> None:
+    _load_reports.clear()
+    _cached_model.clear()
+
+
+def _safe_rerun() -> None:
+    if hasattr(st, "rerun"):
+        st.rerun()
+    else:
+        st.experimental_rerun()
+
+
+def _dataset_training_controls(key_prefix: str, button_label: str) -> None:
+    bundled = list_bundled_datasets()
+
+    source_option = st.radio(
+        "Dataset source",
+        SOURCE_OPTIONS,
+        index=0,
+        key=f"{key_prefix}_source_option",
+    )
+
+    data_path = None
+    dataset_name = None
+
+    if source_option == SOURCE_OPTION_BUNDLED:
+        if not bundled:
+            st.warning("No built-in datasets found in `data/bundled/`.")
+        else:
+            label_to_dataset = {
+                f"{dataset.name} ({dataset.file})": dataset for dataset in bundled
+            }
+            selected_label = st.selectbox(
+                "Choose a built-in dataset",
+                list(label_to_dataset.keys()),
+                key=f"{key_prefix}_bundled_choice",
+            )
+            selected_dataset = label_to_dataset[selected_label]
+            data_path = bundled_dataset_path(selected_dataset.dataset_id)
+            dataset_name = selected_dataset.name
+            st.caption(selected_dataset.description)
+
+    elif source_option == SOURCE_OPTION_UPLOAD:
+        uploaded_file = st.file_uploader(
+            "Upload a CSV",
+            type=["csv"],
+            accept_multiple_files=False,
+            key=f"{key_prefix}_upload_file",
+        )
+        if uploaded_file is not None:
+            RAW_DATA_FILE.parent.mkdir(parents=True, exist_ok=True)
+            target_path = RAW_DATA_FILE.parent / f"{key_prefix}_{uploaded_file.name}"
+            target_path.write_bytes(uploaded_file.getvalue())
+            data_path = target_path
+            dataset_name = uploaded_file.name
+
+    train_clicked = st.button(button_label, key=f"{key_prefix}_train_button")
+    if not train_clicked:
+        return
+
+    if source_option == SOURCE_OPTION_BUNDLED and data_path is None:
+        st.error("Pick a built-in dataset before training.")
+        return
+
+    if source_option == SOURCE_OPTION_UPLOAD and data_path is None:
+        st.error("Upload a CSV file before training.")
+        return
+
+    try:
+        with st.spinner("Training model..."):
+            summary = run_training_pipeline(data_path=data_path, dataset_name=dataset_name)
+        _clear_cached_artifacts()
+        st.success(
+            (
+                f"Training complete. Model: {summary.selected_model} | "
+                f"PR-AUC: {summary.test_pr_auc:.3f} | ROC-AUC: {summary.test_roc_auc:.3f}"
+            )
+        )
+        _safe_rerun()
+    except RuntimeError as error:
+        st.error(str(error))
 
 
 def _render_confusion_matrix(confusion: dict, title: str) -> go.Figure:
@@ -228,37 +317,13 @@ def _downsample_curve(curve: pd.DataFrame, max_points: int = 1200) -> pd.DataFra
 
 
 def main() -> None:
-    st.title("Commerce Conversion Intelligence")
-    st.caption(
-        "Production-style conversion model with performance diagnostics, threshold economics, lift analysis, and what-if simulation."
-    )
+    st.title("Commerce Conversion Dashboard")
+    st.caption("A side project for predicting whether a shopping session converts.")
 
     if not _artifacts_ready():
         st.warning("No trained model artifacts found yet.")
-        st.info("Run training here. You can auto-download or upload a local CSV file.")
-        uploaded_file = st.file_uploader(
-            "Optional: upload `online_shoppers_intention.csv`",
-            type=["csv"],
-            accept_multiple_files=False,
-        )
-        if st.button("Run Training Pipeline"):
-            with st.spinner("Training model and generating reports..."):
-                data_path = None
-                if uploaded_file is not None:
-                    RAW_DATA_FILE.parent.mkdir(parents=True, exist_ok=True)
-                    RAW_DATA_FILE.write_bytes(uploaded_file.getvalue())
-                    data_path = RAW_DATA_FILE
-                try:
-                    summary = run_training_pipeline(data_path=data_path)
-                    st.success(
-                        (
-                            f"Done. Model: {summary.selected_model} | "
-                            f"PR-AUC: {summary.test_pr_auc:.3f} | ROC-AUC: {summary.test_roc_auc:.3f}"
-                        )
-                    )
-                    st.info("Refresh page to load the new reports.")
-                except RuntimeError as error:
-                    st.error(str(error))
+        st.info("Pick a dataset and train the model.")
+        _dataset_training_controls(key_prefix="initial", button_label="Train model")
         st.stop()
 
     data = _load_reports()
@@ -287,6 +352,12 @@ def main() -> None:
     m4.metric("Brier", f"{metrics_default.get('brier_score', 0.0):.4f}")
     m5.metric("Best Threshold", f"{optimal_threshold:.2f}")
     m6.metric("Top Decile Lift", f"{float(top_decile.get('lift_vs_baseline', 0.0)):.2f}x")
+
+    with st.sidebar:
+        st.markdown("### Data")
+        st.caption(f"Current dataset: {evaluation['dataset'].get('source_name', 'Unknown')}")
+        with st.expander("Train on another dataset"):
+            _dataset_training_controls(key_prefix="sidebar", button_label="Retrain")
 
     section = st.sidebar.radio(
         "Section",
@@ -539,7 +610,7 @@ def main() -> None:
             st.metric("Delta", f"{delta:+.2%}")
             st.metric(
                 "Suggested Action",
-                "Aggressive conversion nudge" if adjusted_prob >= optimal_threshold else "Soft nurture path",
+                "Likely converter" if adjusted_prob >= optimal_threshold else "Lower intent session",
             )
 
         sensitivity = _scenario_sensitivity_table(model, baseline_payload, scenario_features)
@@ -569,7 +640,7 @@ def main() -> None:
             st.plotly_chart(tornado, use_container_width=True)
 
     else:
-        st.subheader("Model Governance and Submission Assets")
+        st.subheader("Downloads")
 
         left, right = st.columns(2)
         with left:

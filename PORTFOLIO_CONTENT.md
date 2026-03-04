@@ -1,24 +1,24 @@
 # Portfolio Content Pack
 
-## 1) Portfolio Card (Short)
+## 1) Project Card (Short)
 **commerceconversiondashboard**  
-Production-style e-commerce conversion prediction project with an interactive Streamlit dashboard. Includes calibration diagnostics, decile lift analysis, threshold economics, and scenario simulation for business decision support.
+A Python side project where I predict e-commerce conversion and explore model performance in a Streamlit dashboard.
 
 Tech: `Python`, `pandas`, `numpy`, `scikit-learn`, `plotly`, `streamlit`
 
-## 2) Portfolio Case Study (Medium)
-I built an end-to-end machine learning project to predict purchase conversion at session level and convert model outputs into commercial targeting decisions. The project includes robust preprocessing with `ColumnTransformer`, model selection via stratified cross-validation, and evaluation using PR-AUC, ROC-AUC, and Brier score. I added decile lift and expected-value threshold analysis to support practical budget allocation decisions. The output is delivered through a Streamlit app with scenario simulation and downloadable governance reports (model card + executive summary).
+## 2) Case Study Paragraph
+I built this project in my spare time to practice full end-to-end machine learning on real tabular data. It includes data prep, model comparison, threshold tuning, calibration checks, and lift analysis. I also built a Streamlit UI so people can switch datasets, retrain, and try simple what-if scenarios.
 
 ## 3) CV Bullets
-- Built a production-style conversion prediction pipeline in Python (`pandas`, `numpy`, `scikit-learn`) with stratified CV model selection and calibration diagnostics.
-- Implemented commercial analytics (decile lift, conversion capture, threshold expected-value optimization) to translate model performance into business actions.
-- Developed an interactive Streamlit dashboard with scenario simulation and governance outputs for stakeholder-ready reporting.
+- Built an end-to-end conversion prediction project in Python using `pandas`, `numpy`, and `scikit-learn`.
+- Evaluated models with PR-AUC/ROC-AUC and added calibration + lift analysis for better interpretation.
+- Created a Streamlit dashboard with dataset switching, retraining, and scenario sliders.
 
 ## 4) GitHub "About" Text
-End-to-end e-commerce conversion prediction with Streamlit dashboard, lift analysis, calibration, and threshold economics.
+E-commerce conversion prediction project with a Streamlit dashboard (model comparison, calibration, lift, threshold tuning).
 
 ## 5) Suggested GitHub Topics
-`data-science`, `machine-learning`, `python`, `streamlit`, `pandas`, `scikit-learn`, `classification`, `analytics`, `ecommerce`, `portfolio-project`
+`data-science`, `machine-learning`, `python`, `streamlit`, `pandas`, `scikit-learn`, `classification`, `ecommerce`, `portfolio-project`
 
 ## 6) Interview One-Liner
-I built an end-to-end conversion intelligence workflow that predicts session conversion probability and optimizes intervention thresholds using expected commercial value, then exposed it through an interactive dashboard for non-technical stakeholders.
+I built a side project that predicts shopping-session conversion and lets users explore model behaviour through an interactive Streamlit app.

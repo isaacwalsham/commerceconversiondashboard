@@ -1,39 +1,33 @@
 # commerceconversiondashboard
 
-A production-style data science project for predicting e-commerce conversion and turning model output into commercial actions.
+A side project where I built a model to predict whether an e-commerce session ends in a purchase.
 
-## Project Snapshot
-- Objective: predict whether a session converts (`Revenue`) and optimize targeting decisions.
-- Dataset: UCI Online Shoppers Purchasing Intention.
-- Primary metrics: PR-AUC, ROC-AUC, Brier score, decile lift, expected value by threshold.
-- Delivery: training pipeline, evaluation reports, and an interactive Streamlit dashboard.
+## What This Project Does
+- Trains a classifier on the UCI Online Shoppers dataset.
+- Compares models using cross-validation.
+- Shows ROC/PR, calibration, lift, and threshold trade-offs.
+- Runs an interactive Streamlit app so you can explore the results.
 
-## Portfolio Case Study Summary
-Built an end-to-end conversion intelligence system in Python using `pandas`, `numpy`, and `scikit-learn`. The pipeline includes robust preprocessing, model selection with stratified cross-validation, calibration diagnostics, and value-based threshold optimization. Results are surfaced in an interactive dashboard with performance diagnostics, decile lift analytics, and a scenario simulator for stakeholder decision support.
-
-## Results (latest run)
+## Latest Results (full dataset)
 - Selected model: `random_forest`
 - PR-AUC: `0.724`
 - ROC-AUC: `0.926`
-- Optimal threshold: `0.09`
-- Expected value at optimal threshold: `21,775.5` (relative units)
+- Best threshold: `0.09`
 
-## CV Bullets
-- Developed a production-style conversion prediction pipeline in Python (`pandas`, `numpy`, `scikit-learn`) with stratified CV model selection and calibration diagnostics.
-- Built a business-facing analytics layer with threshold optimization, decile lift analysis, and expected-value targeting metrics.
-- Delivered an interactive Streamlit dashboard with scenario simulation and downloadable model governance artifacts (executive summary and model card).
+## Built-in Datasets
+These are included in `data/bundled/` so the app works without manual uploads:
+- `online_shoppers_full.csv`
+- `online_shoppers_returning_focus.csv`
+- `online_shoppers_seasonal_focus.csv`
 
-## GitHub Profile Copy
-- Repo name: `commerceconversiondashboard`
-- Short description: `End-to-end e-commerce conversion prediction with Streamlit dashboard, lift analysis, calibration, and threshold economics.`
-- Suggested topics: `data-science`, `machine-learning`, `python`, `streamlit`, `pandas`, `scikit-learn`, `classification`, `analytics`, `ecommerce`, `portfolio-project`
+The app has a dataset selector, so you can switch and retrain from the UI.
 
 ## Stack
-- Python 3.10+
+- Python
 - pandas, numpy
 - scikit-learn
 - plotly, streamlit
-- pytest, ruff
+- pytest
 
 ## Project Structure
 ```text
@@ -43,25 +37,16 @@ Built an end-to-end conversion intelligence system in Python using `pandas`, `nu
 │   ├── lite_app.py
 │   └── style.css
 ├── data/
+│   ├── bundled/
 │   ├── raw/
 │   └── processed/
 ├── models/
 ├── reports/
 ├── scripts/
-│   ├── download_data.py
-│   └── train_model.py
 ├── src/
 │   └── commerceconversiondashboard/
-│       ├── data.py
-│       ├── features.py
-│       ├── inference.py
-│       ├── metrics.py
-│       ├── modeling.py
-│       ├── paths.py
-│       └── train.py
 ├── tests/
 ├── Makefile
-├── pyproject.toml
 └── README.md
 ```
 
@@ -73,27 +58,23 @@ pip install -U pip
 pip install -e '.[dev]'
 ```
 
-## Train Model
+## Train From CLI
 ```bash
-python scripts/train_model.py --data-path data/raw/online_shoppers_intention.csv
+python scripts/train_model.py --data-path data/bundled/online_shoppers_full.csv
 ```
 
-If internet access is available, you can also auto-download:
-```bash
-python scripts/train_model.py
-```
-
-## Run Dashboard
+## Run App
 ```bash
 streamlit run app/app.py
 ```
 
-If you hit browser rendering issues, use the minimal fallback:
+If your browser has issues with the full app, use:
 ```bash
 streamlit run app/lite_app.py
 ```
 
-## Generated Artifacts
+## Output Files
+Training writes these files:
 - `models/conversion_model.joblib`
 - `models/model_metadata.json`
 - `reports/evaluation_summary.json`
@@ -108,15 +89,7 @@ streamlit run app/lite_app.py
 - `reports/model_card.md`
 - `reports/executive_summary.md`
 
-## Dashboard Sections
-- Overview
-- Performance
-- Value & Lift
-- Scenario Lab
-- Report Center
-
-## Quality Checks
+## Tests
 ```bash
 pytest
-ruff check .
 ```

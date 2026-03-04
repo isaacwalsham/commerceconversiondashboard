@@ -1,0 +1,22 @@
+{
+  "datasets": [
+    {
+      "id": "full",
+      "name": "Full UCI Online Shoppers",
+      "file": "online_shoppers_full.csv",
+      "description": "Complete public dataset for general benchmarking and strongest model performance."
+    },
+    {
+      "id": "returning_focus",
+      "name": "Returning Visitor Focus",
+      "file": "online_shoppers_returning_focus.csv",
+      "description": "Behavior concentrated on returning shoppers with a light new-visitor mix."
+    },
+    {
+      "id": "seasonal_focus",
+      "name": "Seasonal Focus (Q4 heavy)",
+      "file": "online_shoppers_seasonal_focus.csv",
+      "description": "Seasonal scenario for Oct-Dec demand patterns with some late-Q3 context."
+    }
+  ]
+}

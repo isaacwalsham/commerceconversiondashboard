@@ -81,7 +81,7 @@ def _build_model_card_markdown(
     optimal_threshold: float,
 ) -> str:
     generated_at = datetime.now(timezone.utc).isoformat()
-    return f"""# Model Card: Commerce Conversion Predictor
+    return f"""# Model Card: Conversion Project
 
 ## 1. Model Details
 - Model type: `{selected_model}`
@@ -108,9 +108,9 @@ def _build_model_card_markdown(
 - F1 (test, optimized threshold): {metrics_optimal["f1"]:.3f}
 
 ## 5. Intended Use
-- Prioritize high-intent sessions for targeted interventions
-- Support conversion forecasting and campaign triage
-- Aid commercial teams with evidence-based threshold selection
+- Rank sessions by purchase likelihood
+- Compare threshold trade-offs in one place
+- Use as a learning project for classification workflows
 
 ## 6. Limitations
 - Single public dataset may not represent all verticals/regions
@@ -120,7 +120,7 @@ def _build_model_card_markdown(
 ## 7. Monitoring Plan
 - Weekly: score distribution drift and conversion-rate drift
 - Monthly: calibration check and decile lift stability
-- Quarterly: retrain and re-validate threshold economics
+- Quarterly: retrain and compare metrics against previous runs
 """
 
 
@@ -134,10 +134,10 @@ def _build_executive_summary_markdown(
     top_decile_lift: float,
     top_decile_capture: float,
 ) -> str:
-    return f"""# Executive Summary: Conversion Intelligence
+    return f"""# Executive Summary
 
 ## Headline
-The selected model (`{selected_model}`) identifies high-intent sessions with strong ranking quality and supports commercial threshold optimization.
+The selected model (`{selected_model}`) ranks likely converters well and gives a useful threshold for targeting.
 
 ## Key Metrics
 - PR-AUC: {metrics_default["pr_auc"]:.3f}
@@ -152,13 +152,13 @@ The selected model (`{selected_model}`) identifies high-intent sessions with str
 - Cumulative conversions captured by top decile: {top_decile_capture:.2%}
 
 ## Recommended Actions
-1. Route sessions above `{optimal_threshold:.2f}` to high-intent interventions.
-2. Use decile rank to allocate retargeting budget by value density.
+1. Use `{optimal_threshold:.2f}` as a starting threshold for \"likely to convert\".
+2. Use decile rank to focus attention on top-scoring sessions first.
 3. Track calibration monthly; recalibrate or retrain if gap widens.
 
 ## Caveats
-- Use this model for prioritization support, not as a standalone decision engine.
-- Validate expected-value assumptions (conversion value/contact cost) for your business context.
+- This is a predictive model, not a causal model.
+- Expected-value results depend on the conversion value/contact cost assumptions.
 """
 
 
@@ -242,14 +242,17 @@ def run_training_pipeline(
     random_state: int = 42,
     force_download: bool = False,
     data_path: Path | None = None,
+    dataset_name: str | None = None,
 ) -> TrainingSummary:
     """Run full train/evaluate/save workflow."""
     _ensure_output_dirs()
 
     if data_path is None:
         raw_file = download_online_shoppers_dataset(force=force_download)
+        resolved_dataset_name = dataset_name or "UCI Online Shoppers (Auto-download)"
     else:
         raw_file = Path(data_path)
+        resolved_dataset_name = dataset_name or raw_file.stem
 
     df = load_dataset(raw_file)
     split_data = split_features_target(df=df, random_state=random_state)
@@ -321,6 +324,8 @@ def run_training_pipeline(
         "feature_columns": split_data.x_train.columns.tolist(),
         "default_threshold": 0.5,
         "optimal_threshold": optimal_threshold,
+        "data_source_name": resolved_dataset_name,
+        "data_source_file": str(raw_file),
     }
 
     summary_payload = {
@@ -328,6 +333,8 @@ def run_training_pipeline(
             "rows": int(len(df)),
             "columns": int(df.shape[1]),
             "positive_rate": float(df["Revenue"].mean()),
+            "source_name": resolved_dataset_name,
+            "source_file": str(raw_file),
         },
         "cross_validation": cv_results.to_dict(orient="records"),
         "selected_model": selected_model,

@@ -1,9 +1,9 @@
-# Model Card: Commerce Conversion Predictor
+# Model Card: Conversion Project
 
 ## 1. Model Details
 - Model type: `random_forest`
 - Objective: predict session-level purchase conversion
-- Training timestamp (UTC): 2026-03-04T20:47:18.228760+00:00
+- Training timestamp (UTC): 2026-03-04T21:12:29.699808+00:00
 
 ## 2. Data
 - Dataset: UCI Online Shoppers Purchasing Intention
@@ -25,9 +25,9 @@
 - F1 (test, optimized threshold): 0.417
 
 ## 5. Intended Use
-- Prioritize high-intent sessions for targeted interventions
-- Support conversion forecasting and campaign triage
-- Aid commercial teams with evidence-based threshold selection
+- Rank sessions by purchase likelihood
+- Compare threshold trade-offs in one place
+- Use as a learning project for classification workflows
 
 ## 6. Limitations
 - Single public dataset may not represent all verticals/regions
@@ -37,4 +37,4 @@
 ## 7. Monitoring Plan
 - Weekly: score distribution drift and conversion-rate drift
 - Monthly: calibration check and decile lift stability
-- Quarterly: retrain and re-validate threshold economics
+- Quarterly: retrain and compare metrics against previous runs

@@ -5,11 +5,13 @@ from pathlib import Path
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 DATA_RAW_DIR = PROJECT_ROOT / "data" / "raw"
 DATA_PROCESSED_DIR = PROJECT_ROOT / "data" / "processed"
+DATA_BUNDLED_DIR = PROJECT_ROOT / "data" / "bundled"
 MODELS_DIR = PROJECT_ROOT / "models"
 REPORTS_DIR = PROJECT_ROOT / "reports"
 FIGURES_DIR = PROJECT_ROOT / "figures"
 
 RAW_DATA_FILE = DATA_RAW_DIR / "online_shoppers_intention.csv"
+DATASET_MANIFEST_FILE = DATA_BUNDLED_DIR / "datasets_manifest.json"
 TRAIN_DATA_FILE = DATA_PROCESSED_DIR / "train.csv"
 TEST_DATA_FILE = DATA_PROCESSED_DIR / "test.csv"
 MODEL_FILE = MODELS_DIR / "conversion_model.joblib"
